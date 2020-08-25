@@ -1,1 +1,1 @@
-# Dissertation_improvement_of_SVM
+# Application-and-Performance-Evaluation-of-machine-learning-in-credit-risk-identification
