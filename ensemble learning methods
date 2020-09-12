@@ -1,1 +1,516 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 25 09:14:21 2020
+
+@author: 35453
+"""
+
+
+import numpy as np
+import pandas as pd
+
+data = pd.read_csv('data_after_preprocess.csv')
+
+from sklearn.model_selection import train_test_split
+X_train,X_test,Y_train,Y_test=train_test_split(data.iloc[:,0:-1],data.iloc[:,-1],test_size=0.3,random_state=1)
+
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+# Fitting RF to the Training set
+from sklearn.ensemble import RandomForestClassifier
+classifier = RandomForestClassifier(n_estimators=100,max_depth=20,criterion= 'entropy')
+classifier.fit(X_train, Y_train)
+
+# Predicting the Test set results
+Y_pred = classifier.predict(X_test)
+
+# CONFUSION MATRIX
+from sklearn.metrics import confusion_matrix
+cm_RF = confusion_matrix(Y_test, Y_pred)
+# ACCURACY PROBABILITY
+from sklearn.metrics import accuracy_score
+accuracy_score_RF=accuracy_score(Y_test, Y_pred)
+# PRECISION 
+from sklearn.metrics import precision_score
+precision_score_RF=precision_score(Y_test, Y_pred, average='weighted')
+# RECALL
+from sklearn.metrics import recall_score
+recall_score_RF=recall_score(Y_test, Y_pred, average='weighted')
+# F1 SCORE
+from sklearn.metrics import f1_score
+f1_score_RF=f1_score(Y_test, Y_pred, average='weighted')
+
+# AUC + ROC CURVE
+from sklearn.metrics import roc_curve, auc 
+y_pred_proba =classifier.predict_proba(X_test)[:,1]
+fpr,tpr,threshold = roc_curve(Y_test,y_pred_proba) 
+roc_auc_RF = auc(fpr,tpr) 
+
+import matplotlib.pyplot as plt
+plt.figure()
+lw = 2
+plt.figure(figsize=(10,10))
+plt.plot(fpr, tpr, color='b',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc_RF) 
+plt.plot([0, 1], [0, 1], color='y', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.title('Random Forest ROC curve (AUC = %0.4f)' % roc_auc_RF,fontsize=18)
+plt.legend(loc="lower right")
+plt.show()
+
+num=list(range(1,101))
+accuracy_list=list(range(1,105))
+for i in num:
+    classifier = RandomForestClassifier(n_estimators=100,max_depth=i,criterion= 'entropy')
+    classifier.fit(X_train, Y_train)
+    # Predicting the Test set results
+    Y_pred = classifier.predict(X_test)
+    from sklearn.metrics import confusion_matrix
+    cm_RF = confusion_matrix(Y_test, Y_pred)
+    # ACCURACY PROBABILITY
+    from sklearn.metrics import accuracy_score
+    accuracy_score_RF=accuracy_score(Y_test, Y_pred)
+    accuracy_list[i]=accuracy_score_RF
+    
+accuracy_list=accuracy_list[1:99]
+len(accuracy_list)
+xxx=list(range(1,99))
+accuracy_list.index(max(accuracy_list))    # best depth is :40
+
+# draw picture to show accuracy change with depth increasing
+plt.figure()
+plt.figure(figsize=(10,10))
+plt.title('Random Forest model accuracy value with different depth value')
+plt.xlabel('depth')
+plt.ylabel('Accuracy')
+plt.plot(xxx,accuracy_list)
+
+# Fitting Adaboost(decision tree) to the Training set
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+classifier =AdaBoostClassifier(
+    base_estimator=DecisionTreeClassifier(criterion = 'entropy',random_state = 0,max_depth=8),
+    n_estimators=3000, #1000- accuracy 0.9313  2000- accuracy 0.9326
+    random_state=0
+    )
+classifier.fit(X_train, Y_train)
+
+# Predicting the Test set results
+Y_pred = classifier.predict(X_test)
+
+# CONFUSION MATRIX
+from sklearn.metrics import confusion_matrix
+cm_ADT = confusion_matrix(Y_test, Y_pred)
+# ACCURACY PROBABILITY
+from sklearn.metrics import accuracy_score
+accuracy_score_ADT=accuracy_score(Y_test, Y_pred)
+# PRECISION 
+from sklearn.metrics import precision_score
+precision_score_ADT=precision_score(Y_test, Y_pred, average='weighted')
+# RECALL
+from sklearn.metrics import recall_score
+recall_score_ADT=recall_score(Y_test, Y_pred, average='weighted')
+# F1 SCORE
+from sklearn.metrics import f1_score
+f1_score_ADT=f1_score(Y_test, Y_pred, average='weighted')
+
+# AUC + ROC CURVE
+from sklearn.metrics import roc_curve, auc 
+y_pred_proba =classifier.predict_proba(X_test)[:,1]
+fpr,tpr,threshold = roc_curve(Y_test,y_pred_proba) 
+roc_auc_ADT = auc(fpr,tpr) 
+
+import matplotlib.pyplot as plt
+plt.figure()
+lw = 2
+plt.figure(figsize=(10,10))
+plt.plot(fpr, tpr, color='b',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc_ADT) 
+plt.plot([0, 1], [0, 1], color='y', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Adaboost_decision tree ROC curve (AUC = %0.4f)' % roc_auc_ADT,fontsize=18)
+plt.legend(loc="lower right")
+plt.show()
+
+
+# Fitting Adaboost(logistic regression) to the Training set
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.linear_model import LogisticRegression
+classifier =AdaBoostClassifier(
+    base_estimator=LogisticRegression(penalty='l2'),
+    algorithm='SAMME.R',  
+    random_state=0,
+    n_estimators=2000    
+    )
+classifier.fit(X_train, Y_train)
+
+# Predicting the Test set results
+Y_pred = classifier.predict(X_test)
+
+# CONFUSION MATRIX
+from sklearn.metrics import confusion_matrix
+cm_ALR = confusion_matrix(Y_test, Y_pred)
+# ACCURACY PROBABILITY
+from sklearn.metrics import accuracy_score
+accuracy_score_ALR=accuracy_score(Y_test, Y_pred)
+# PRECISION 
+from sklearn.metrics import precision_score
+precision_score_ALR=precision_score(Y_test, Y_pred, average='weighted')
+# RECALL
+from sklearn.metrics import recall_score
+recall_score_ALR=recall_score(Y_test, Y_pred, average='weighted')
+# F1 SCORE
+from sklearn.metrics import f1_score
+f1_score_ALR=f1_score(Y_test, Y_pred, average='weighted')
+
+# AUC + ROC CURVE
+scores=classifier.decision_function(X_test)
+from sklearn.metrics import roc_curve, auc 
+fpr,tpr,threshold = roc_curve(Y_test, scores)
+roc_auc_ALR = auc(fpr,tpr) 
+
+import matplotlib.pyplot as plt
+plt.figure()
+lw = 2
+plt.figure(figsize=(10,10))
+plt.plot(fpr, tpr, color='b',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc_ALR) 
+plt.plot([0, 1], [0, 1], color='y', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Adaboost_logistic regression ROC curve (AUC = %0.4f)' % roc_auc_ALR,fontsize=18)
+plt.legend(loc="lower right")
+plt.show()
+
+
+
+# Fitting Gradient Boosting Decision Tree to the Training set
+from sklearn.ensemble import GradientBoostingClassifier
+classifier =GradientBoostingClassifier(max_depth=10)
+classifier.fit(X_train, Y_train)
+
+# Predicting the Test set results
+Y_pred = classifier.predict(X_test)
+
+# CONFUSION MATRIX
+from sklearn.metrics import confusion_matrix
+cm_GBDT = confusion_matrix(Y_test, Y_pred)
+# ACCURACY PROBABILITY
+from sklearn.metrics import accuracy_score
+accuracy_score_GBDT=accuracy_score(Y_test, Y_pred)
+# PRECISION 
+from sklearn.metrics import precision_score
+precision_score_GBDT=precision_score(Y_test, Y_pred, average='weighted')
+# RECALL
+from sklearn.metrics import recall_score
+recall_score_GBDT=recall_score(Y_test, Y_pred, average='weighted')
+# F1 SCORE
+from sklearn.metrics import f1_score
+f1_score_GBDT=f1_score(Y_test, Y_pred, average='weighted')
+
+# AUC + ROC CURVE
+from sklearn.metrics import roc_curve, auc 
+y_pred_proba =classifier.decision_function(X_test)
+fpr,tpr,threshold = roc_curve(Y_test,y_pred_proba) 
+roc_auc_GBDT = auc(fpr,tpr) 
+
+import matplotlib.pyplot as plt
+plt.figure()
+lw = 2
+plt.figure(figsize=(10,10))
+plt.plot(fpr, tpr, color='b',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc_GBDT) 
+plt.plot([0, 1], [0, 1], color='y', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('GBDT ROC curve (AUC = %0.4f)' % roc_auc_GBDT,fontsize=18)
+plt.legend(loc="lower right")
+plt.show()
+
+
+# select the best depth of GBDT
+num=list(range(1,25))
+accuracy_list=list(range(1,30))
+for i in num:
+    classifier = GradientBoostingClassifier(max_depth=i)
+    classifier.fit(X_train, Y_train)
+    # Predicting the Test set results
+    Y_pred = classifier.predict(X_test)
+    # ACCURACY PROBABILITY
+    from sklearn.metrics import accuracy_score
+    accuracy_score_GBDT=accuracy_score(Y_test, Y_pred)
+    accuracy_list[i]=accuracy_score_GBDT
+    
+accuracy_list=accuracy_list[1:25]
+len(accuracy_list)
+xxx=list(range(1,25))
+maxindex=accuracy_list.index(max(accuracy_list))    # best depth is :10
+accuracy_list[maxindex]
+
+# draw picture to show accuracy change with k increasing
+plt.figure()
+plt.figure(figsize=(10,10))
+plt.title('GBDT model accuracy value with different depth value')
+plt.xlabel('depth')
+plt.ylabel('Accuracy')
+plt.plot(xxx,accuracy_list)
+
+
+
+
+
+# Fitting stacking 1 to the Training set
+from sklearn.ensemble import StackingClassifier
+
+estimators = [
+('SVM',SVC()),
+('DT', DecisionTreeClassifier(criterion = 'entropy', random_state = 0,max_depth=8)),
+('KNN',KNeighborsClassifier(n_neighbors=8,weights='distance',algorithm='kd_tree')),
+('NB',BernoulliNB(alpha=1)),
+('rf',RandomForestClassifier(n_estimators=100,max_depth=20,criterion= 'entropy')),
+('ADT',AdaBoostClassifier(
+    base_estimator=DecisionTreeClassifier(criterion = 'entropy',random_state = 0,max_depth=8),
+    n_estimators=3000, #1000- accuracy 0.9313  2000- accuracy 0.9326
+    random_state=0
+    )),
+('GBDT',GradientBoostingClassifier(max_depth=10)),
+('MLP', MLPClassifier(hidden_layer_sizes=(100, ), activation='relu', solver='adam',max_iter=1500,random_state=0))
+]
+
+
+classifier = StackingClassifier(estimators=estimators,final_estimator=LogisticRegression(penalty='l2'))
+classifier.fit(X_train, Y_train)
+
+# Predicting the Test set results
+Y_pred = classifier.predict(X_test)
+
+# CONFUSION MATRIX
+from sklearn.metrics import confusion_matrix
+cm_ST1 = confusion_matrix(Y_test, Y_pred)
+# ACCURACY PROBABILITY
+from sklearn.metrics import accuracy_score
+accuracy_score_ST1=accuracy_score(Y_test, Y_pred)
+# PRECISION 
+from sklearn.metrics import precision_score
+precision_score_ST1=precision_score(Y_test, Y_pred, average='weighted')
+# RECALL
+from sklearn.metrics import recall_score
+recall_score_ST1=recall_score(Y_test, Y_pred, average='weighted')
+# F1 SCORE
+from sklearn.metrics import f1_score
+f1_score_ST1=f1_score(Y_test, Y_pred, average='weighted')
+
+# AUC + ROC CURVE
+from sklearn.metrics import roc_curve, auc 
+y_pred_proba =classifier.decision_function(X_test)
+fpr,tpr,threshold = roc_curve(Y_test,y_pred_proba) 
+roc_auc_ST1 = auc(fpr,tpr) 
+
+import matplotlib.pyplot as plt
+plt.figure()
+lw = 2
+plt.figure(figsize=(10,10))
+plt.plot(fpr, tpr, color='b',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc_ST1) 
+plt.plot([0, 1], [0, 1], color='y', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Stacking 1 ROC curve (AUC = %0.4f)' % roc_auc_ST1,fontsize=18)
+plt.legend(loc="lower right")
+plt.show()
+
+
+# Fitting stacking 2 to the Training set
+from sklearn.ensemble import StackingClassifier
+
+estimators = [
+('SVM',SVC()),
+('DT', DecisionTreeClassifier(criterion = 'entropy', random_state = 0,max_depth=8)),
+('KNN',KNeighborsClassifier(n_neighbors=8,weights='distance',algorithm='kd_tree')),
+('rf',RandomForestClassifier(n_estimators=100,max_depth=20,criterion= 'entropy')),
+('ADT',AdaBoostClassifier(
+    base_estimator=DecisionTreeClassifier(criterion = 'entropy',random_state = 0,max_depth=8),
+    n_estimators=3000, #1000- accuracy 0.9313  2000- accuracy 0.9326
+    random_state=0
+    )),
+('GBDT',GradientBoostingClassifier(max_depth=10)),
+('MLP', MLPClassifier(hidden_layer_sizes=(100, ), activation='relu', solver='adam',max_iter=1500,random_state=0))
+]
+
+classifier = StackingClassifier(estimators=estimators,final_estimator=LogisticRegression(penalty='l2'))
+classifier.fit(X_train, Y_train)
+
+# Predicting the Test set results
+Y_pred = classifier.predict(X_test)
+
+# CONFUSION MATRIX
+from sklearn.metrics import confusion_matrix
+cm_ST2 = confusion_matrix(Y_test, Y_pred)
+# ACCURACY PROBABILITY
+from sklearn.metrics import accuracy_score            
+accuracy_score_ST2=accuracy_score(Y_test, Y_pred)             #0.937585308350912
+# PRECISION 
+from sklearn.metrics import precision_score
+precision_score_ST2=precision_score(Y_test, Y_pred, average='weighted')
+# RECALL
+from sklearn.metrics import recall_score
+recall_score_ST2=recall_score(Y_test, Y_pred, average='weighted')
+# F1 SCORE
+from sklearn.metrics import f1_score
+f1_score_ST2=f1_score(Y_test, Y_pred, average='weighted')
+
+# AUC + ROC CURVE
+from sklearn.metrics import roc_curve, auc 
+y_pred_proba =classifier.decision_function(X_test)
+fpr,tpr,threshold = roc_curve(Y_test,y_pred_proba) 
+roc_auc_ST2 = auc(fpr,tpr) 
+
+import matplotlib.pyplot as plt
+plt.figure()
+lw = 2
+plt.figure(figsize=(10,10))
+plt.plot(fpr, tpr, color='b',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc_ST2) 
+plt.plot([0, 1], [0, 1], color='y', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Stacking 2 ROC curve (AUC = %0.4f)' % roc_auc_ST2,fontsize=18)
+plt.legend(loc="lower right")
+plt.show()
+
+
+# Fitting stacking 3 to the Training set
+from sklearn.ensemble import StackingClassifier
+
+estimators = [
+('SVM',SVC()),
+('DT', DecisionTreeClassifier(criterion = 'entropy', random_state = 0,max_depth=8)),
+('rf',RandomForestClassifier(n_estimators=100,max_depth=20,criterion= 'entropy')),
+('ADT',AdaBoostClassifier(
+    base_estimator=DecisionTreeClassifier(criterion = 'entropy',random_state = 0,max_depth=8),
+    n_estimators=3000, #1000- accuracy 0.9313  2000- accuracy 0.9326
+    random_state=0
+    )),
+('GBDT',GradientBoostingClassifier(max_depth=10)),
+('MLP', MLPClassifier(hidden_layer_sizes=(100, ), activation='relu', solver='adam',max_iter=1500,random_state=0))
+]
+
+classifier = StackingClassifier(estimators=estimators,final_estimator=LogisticRegression(penalty='l2'))
+classifier.fit(X_train, Y_train)
+
+# Predicting the Test set results
+Y_pred = classifier.predict(X_test)
+
+# CONFUSION MATRIX
+from sklearn.metrics import confusion_matrix
+cm_ST3 = confusion_matrix(Y_test, Y_pred)
+# ACCURACY PROBABILITY
+from sklearn.metrics import accuracy_score
+accuracy_score_ST3=accuracy_score(Y_test, Y_pred)
+# PRECISION 
+from sklearn.metrics import precision_score
+precision_score_ST3=precision_score(Y_test, Y_pred, average='weighted')
+# RECALL
+from sklearn.metrics import recall_score
+recall_score_ST3=recall_score(Y_test, Y_pred, average='weighted')
+# F1 SCORE
+from sklearn.metrics import f1_score
+f1_score_ST3=f1_score(Y_test, Y_pred, average='weighted')
+
+# AUC + ROC CURVE
+from sklearn.metrics import roc_curve, auc 
+y_pred_proba =classifier.decision_function(X_test)
+fpr,tpr,threshold = roc_curve(Y_test,y_pred_proba) 
+roc_auc_ST3 = auc(fpr,tpr) 
+
+import matplotlib.pyplot as plt
+plt.figure()
+lw = 2
+plt.figure(figsize=(10,10))
+plt.plot(fpr, tpr, color='b',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc_ST3) 
+plt.plot([0, 1], [0, 1], color='y', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Stacking 3 ROC curve (AUC = %0.4f)' % roc_auc_ST3,fontsize=18)
+plt.legend(loc="lower right")
+plt.show()
+
+# Fitting stacking 4 to the Training set
+from sklearn.ensemble import StackingClassifier
+
+estimators = [
+('DT', DecisionTreeClassifier(criterion = 'entropy', random_state = 0,max_depth=8)),
+('rf',RandomForestClassifier(n_estimators=100,max_depth=20,criterion= 'entropy')),
+('ADT',AdaBoostClassifier(
+    base_estimator=DecisionTreeClassifier(criterion = 'entropy',random_state = 0,max_depth=8),
+    n_estimators=3000, #1000- accuracy 0.9313  2000- accuracy 0.9326
+    random_state=0
+    )),
+('GBDT',GradientBoostingClassifier(max_depth=10)),
+('MLP', MLPClassifier(hidden_layer_sizes=(100, ), activation='relu', solver='adam',max_iter=1500,random_state=0))
+]
+
+classifier = StackingClassifier(estimators=estimators,final_estimator=LogisticRegression(penalty='l2'))
+classifier.fit(X_train, Y_train)
+
+# Predicting the Test set results
+Y_pred = classifier.predict(X_test)
+
+# CONFUSION MATRIX
+from sklearn.metrics import confusion_matrix
+cm_ST4 = confusion_matrix(Y_test, Y_pred)
+# ACCURACY PROBABILITY
+from sklearn.metrics import accuracy_score
+accuracy_score_ST4=accuracy_score(Y_test, Y_pred)
+# PRECISION 
+from sklearn.metrics import precision_score
+precision_score_ST4=precision_score(Y_test, Y_pred, average='weighted')
+# RECALL
+from sklearn.metrics import recall_score
+recall_score_ST4=recall_score(Y_test, Y_pred, average='weighted')
+# F1 SCORE
+from sklearn.metrics import f1_score
+f1_score_ST4=f1_score(Y_test, Y_pred, average='weighted')
+
+# AUC + ROC CURVE
+from sklearn.metrics import roc_curve, auc 
+y_pred_proba =classifier.decision_function(X_test)
+fpr,tpr,threshold = roc_curve(Y_test,y_pred_proba) 
+roc_auc_ST4 = auc(fpr,tpr) 
+
+import matplotlib.pyplot as plt
+plt.figure()
+lw = 2
+plt.figure(figsize=(10,10))
+plt.plot(fpr, tpr, color='b',
+         lw=lw, label='ROC curve (area = %0.4f)' % roc_auc_ST4) 
+plt.plot([0, 1], [0, 1], color='y', lw=lw, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Stacking 4 ROC curve (AUC = %0.4f)' % roc_auc_ST4,fontsize=18)
+plt.legend(loc="lower right")
+plt.show()
+
+
 
