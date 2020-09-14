@@ -10,3 +10,10 @@
 结果表明，大多数集成学习方法的性能略优于本研究中使用的其他方法，特别是对于堆叠模型4（ST4）组成部分包括：GBDT，RF，Adaboost（基于DT），DT，MLP和 LR。
 ST4在所有性能评估指标（如准确性，精度，AUC值等）方面处于领先地位，这可能是一种理论上可用于信用评分的新型高效模型。 
 关于应用更多机器学习方法的进一步研究将很有趣，并且在更大的真实数据集上构建模型具有重要意义。
+
+相关文件包括：
+1. data preprocessing.py 用于数据预处理，缺失值填补和异常值探测处理
+2. single method.py 对数据集进行单一分类方法处理，包括了决策树（DT），支持向量机（SVM），K最近邻（KNN），朴素贝叶斯（NB），逻辑回归（LR）和多层感知器（MLP）
+3. ensemble learning methods.py 用于对数据进行集成学习方法，包括了梯度提升决策树（GBDT），随机森林（RF），Adaboost和stacking模型
+4. summary of results.py 对所有模型结果进行汇总总结和可视化处理，对比展示哪些算法效果更好
+5. credit_risk_dataset.csv 是针对本研究所使用的数据集，来自于Kaggle，地址：https://www.kaggle.com/laotse/credit-risk-dataset
