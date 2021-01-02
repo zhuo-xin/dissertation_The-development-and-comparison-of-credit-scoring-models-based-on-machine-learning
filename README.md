@@ -1,3 +1,18 @@
+The development and comparison of credit scoring models based on machine learning methods
+
+Credit scoring as a statistical method to evaluate the probability that loan applicants would default is widely deployed in financial market, such as mortgage and insurance. The significant part of credit scoring is building models, in practice, logistic regression, decision tree and neural network models are relatively popular, as computer power increasing, new methods are created to build efficient models, especially in machine learning field. 
+
+This study aims to review some traditional methods and try to build new credit scoring models to improve the accuracy based on Kaggle simulated data, there are two kinds of methods used: single classification methods and ensemble learning methods. Specifically, single classification methods include Decision Tree (DT), Support Vector Machine (SVM), K Nearest neighbour (KNN), Naïve Bayes (NB), Logistic Regression (LR) and Multi-layer Perceptron (MLP). Ensemble learning methods include Gradient Boosting Decision Tree (GBDT), Random Forest (RF), Adaboost, and Stacking models.
+
+The result indicates that the performance of most ensemble learning methods is slightly better than other methods used in this research, especially for stacking model 4 (ST4), which is combined with GBDT, RF, Adaboost (based on DT), DT, MLP and LR. ST4 was in a leading position in terms of all performance evaluation indicators such as accuracy, precision, AUC value and so on, which may be a new efficient model to be applied in credit scoring theoretically. Further research regarding applying more machine learning methods would be interesting, and it is significant to build models on larger real data set.
+
+Related documents include:
+1. data preprocessing.py is used for data preprocessing, missing value filling and outlier detection processing
+2. single method.py performs a single classification method on the data set, including decision tree (DT), support vector machine (SVM), K nearest neighbor (KNN), naive Bayes (NB), logistic regression (LR) And Multilayer Perceptron (MLP)
+3. ensemble learning methods.py is used to perform integrated learning methods on data, including gradient boosting decision tree (GBDT), random forest (RF), Adaboost and stacking models
+4. summary of results.py summarizes and visualizes all model results, and compares and shows which algorithms perform better
+5. credit_risk_dataset.csv is the data set used in this research, from Kaggle, address: https://www.kaggle.com/laotse/credit-risk-dataset
+
 基于信用风险评分的机器学习模型比较和新模型开发
 
 信用评分是一种统计方法，用于评估贷款申请人违约的可能性，已广泛应用于抵押贷款和保险等金融市场。 
